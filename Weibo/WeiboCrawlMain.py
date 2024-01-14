@@ -160,7 +160,7 @@ def get_weibo_user_info(user_id, session, mode=0):
     try:
         user_info = session.get("https://weibo.com/ajax/profile/info?custom=" + str(user_id), headers=weibo_headers).json()
     except:
-        print("Failed to get id:",user_id)
+        print("Failed to get id:", user_id)
         return None
     gender = user_info['data']['user']["gender"]
     if mode == 0:
@@ -171,7 +171,7 @@ def get_weibo_user_info(user_id, session, mode=0):
             location = user_info['data']['user']["location"]
         return [location, gender]
     elif mode == 1:
-        location=user_info['data']['user']["location"]
+        location = user_info['data']['user']["location"]
         name = user_info['data']['user']["screen_name"]
         friends_count = user_info['data']['user']["friends_count"]
         followers_count = user_info['data']['user']["followers_count"]
@@ -180,6 +180,7 @@ def get_weibo_user_info(user_id, session, mode=0):
         ip_location = detail_info['data']['ip_location']
         desc_text = detail_info['data']['desc_text']
         return [user_id, name, gender, location, ip_location, friends_count, followers_count, created_at, desc_text]
+
 
 def WeiboKeywordCrawl(search_keyword=None, result_save_path='./Results', search_date_range=None, weibo_cookies=None, crawl_user_ip_and_gender=True, crawl_comment=True):
     weibo_session = requests.Session()
@@ -205,11 +206,11 @@ def WeiboKeywordCrawl(search_keyword=None, result_save_path='./Results', search_
     weibo_store_data(total_rst, file_name, search_keyword, 'Query time: ' + datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
 
-def WeiboGetUserInfo(id_list: list, weibo_cookies,result_save_path):
+def WeiboGetUserInfo(id_list: list, weibo_cookies, result_save_path):
     weibo_session = requests.Session()
     weibo_session.cookies.update(weibo_cookies)
     total_result = []
     for idx in trange(len(id_list)):
         total_result.append(get_weibo_user_info(id_list[idx], weibo_session, mode=1))
-    df = pd.DataFrame(total_result, columns=["user_id", "name", "gender", "location", "ip_location", "friends_count", "followers_count", "created_at","desc"])
-    df.to_csv(result_save_path+"/WEIBO_USERINFO", index=False, encoding='utf-8-sig')
+    df = pd.DataFrame(total_result, columns=["user_id", "name", "gender", "location", "ip_location", "friends_count", "followers_count", "created_at", "desc"])
+    df.to_csv(result_save_path + "/WEIBO_USERINFO", index=False, encoding='utf-8-sig')

@@ -25,5 +25,5 @@ def convert_weibo_time_format(time_str, current_time):
 
 
 def weibo_store_data(data_list, output_path, topic, query_time):
-    df = pd.DataFrame(data_list, columns=["topic","comment_time","likes","location","gender"])
+    df = pd.DataFrame(data_list, columns=["comment","comment_time","likes","location","gender"])
     df.to_csv(output_path, index=False, encoding='utf-8-sig')
