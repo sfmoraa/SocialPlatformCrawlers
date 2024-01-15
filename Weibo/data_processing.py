@@ -24,6 +24,15 @@ def convert_weibo_time_format(time_str, current_time):
     return converted_datetime.strftime('%Y-%m-%d %H:%M')
 
 
+def convert_weibo_comment_time_format(time_str):
+    date_object = datetime.strptime(time_str, "%a %b %d %H:%M:%S %z %Y")
+    formatted_date = date_object.strftime("%Y-%m-%d %H:%M")
+    return formatted_date
+
+
 def weibo_store_data(data_list, output_path, topic, query_time):
-    df = pd.DataFrame(data_list, columns=["comment","comment_time","likes","location","gender"])
+    df = pd.DataFrame(data_list, columns=["main_post_id","if_comment_id","if_reply_root_id","type","content","post_time","likes","user_id"])
     df.to_csv(output_path, index=False, encoding='utf-8-sig')
+
+
+
