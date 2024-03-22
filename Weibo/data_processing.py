@@ -21,12 +21,14 @@ def convert_weibo_time_format(time_str, current_time):
         converted_datetime = datetime.strptime(time_str, '%m月%d日 %H:%M')
         converted_datetime=converted_datetime+timedelta(days=(datetime(datetime.now().year, 1, 1) - datetime(converted_datetime.year, 1, 1)).days)
 
-    return converted_datetime.strftime('%Y-%m-%d %H:%M')
+    # return converted_datetime.strftime('%Y-%m-%d %H:%M')
+    return str(int(converted_datetime.timestamp()))
 
 
 def convert_weibo_comment_time_format(time_str):
     date_object = datetime.strptime(time_str, "%a %b %d %H:%M:%S %z %Y")
-    formatted_date = date_object.strftime("%Y-%m-%d %H:%M")
+    # formatted_date = date_object.strftime("%Y-%m-%d %H:%M")
+    formatted_date = str(int(date_object.timestamp()))
     return formatted_date
 
 

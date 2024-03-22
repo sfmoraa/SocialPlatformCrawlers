@@ -14,15 +14,16 @@ weibo_headers = {
 }
 
 
-def create_weibo_search_url(topic, search_days_range, weibo_session):
+def create_weibo_search_url(topic, search_days_range, weibo_session,log_function):
     """ 创建指定日期范围内逐小时的特定关键词的搜索网址链接
 
     :param topic: 用于搜索的关键词
     :param search_days_range: 搜索的时间区间，以列表形式传入，形如["2023-12-18", "2023-12-28"]，左闭右开区间
     :param weibo_session: 建立好的微博会话
+    :param log_function: 日志函数
     :return: 列表形式的待爬取的url
     """
-    print(f"Preparing urls within {search_days_range} in weibo to search...\n")
+    log_function(f"统计关键词“{topic}”在{search_days_range}范围内的搜索结果中...")
     start_datetime = datetime.strptime(search_days_range[0], "%Y-%m-%d")
     end_datetime = datetime.strptime(search_days_range[1], "%Y-%m-%d")
     current_datetime = start_datetime
@@ -136,22 +137,25 @@ def get_weibo_user_info(user_id, session):
     return [user_id, name, gender, location, ip_location, friends_count, followers_count, created_at, desc_text]
 
 
-def WeiboKeywordCrawl(search_keyword=None, result_save_path='./Results', search_date_range=None, weibo_cookies=None, crawl_comment=True):
+def WeiboKeywordCrawl(search_keyword=None, result_save_path='./Results', search_date_range=None, weibo_cookies=None, crawl_comment=True,log_function=print):
     """ 微博关键词搜索的主要实现
 
     :param search_keyword: 待搜素的关键词
     :param result_save_path: 结果保存路径的目录
     :param search_date_range: 搜索日期范围的列表，左闭右开，形如["2023-12-25", "2023-12-26"]
-    :param weibo_cookies: 登录weibo所必须得cookies，以字典形式传入
+    :param weibo_cookies: 登录weibo所必须的cookies，以字典形式传入
     :param crawl_comment: 是否爬取帖子评论，默认为True
+    :param log_function: 可选的日志输出函数
     :return: None
     """
     weibo_session = requests.Session()
     weibo_session.cookies.update(weibo_cookies)
 
-    url_list = create_weibo_search_url(search_keyword, search_date_range, weibo_session)
-    print(f"Ready to crawl [{len(url_list)}] url of weibo, the first is {url_list[0]}", '\n')
-
+    url_list = create_weibo_search_url(search_keyword, search_date_range, weibo_session,log_function)
+    if len(url_list)==0:
+        log_function(f"指定日期范围内无内容")
+        return
+    log_function(f"预计爬取 {len(url_list)}个页面，首页为 {url_list[0]}")
     total_rst = []
     for i in trange(len(url_list)):
         target_url = url_list[i]
@@ -160,10 +164,11 @@ def WeiboKeywordCrawl(search_keyword=None, result_save_path='./Results', search_
             page_rst = extract_data_from_weibo_response(request_rsp, get_comment=crawl_comment)
             total_rst += page_rst
         else:
-            print("Failed to crawl the page:", request_rsp.status_code)
+            log_function("!!!Failed to crawl the page:", request_rsp.status_code)
 
     file_name = result_save_path + "/WEIBO_" + search_keyword + '_' + datetime.now().strftime("%Y%m%d_%H-%M-%S") + ".csv"
     weibo_store_data(total_rst, file_name, search_keyword, 'Query time: ' + datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    log_function(f"结果已保存至{file_name}")
 
 
 def WeiboGetUserInfo(id_list: list, weibo_cookies, result_save_path):
@@ -182,4 +187,4 @@ def WeiboGetUserInfo(id_list: list, weibo_cookies, result_save_path):
         if user_info is not None:
             total_result.append(user_info)
     df = pd.DataFrame(total_result, columns=["user_id", "name", "gender", "location", "ip_location", "friends_count", "followers_count", "created_at", "desc"])
-    df.to_csv(result_save_path + "/WEIBO_USERINFO", index=False, encoding='utf-8-sig')
+    df.to_csv(result_save_path + "/WEIBO_USERINFO.csv", index=False, encoding='utf-8-sig')
